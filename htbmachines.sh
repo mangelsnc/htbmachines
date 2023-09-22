@@ -27,6 +27,8 @@ function helpPanel() {
   echo -e "\t${purpleColour}u)${endColour} ${grayColour}Update machines${endColour}"
   echo -e "\t${purpleColour}i)${endColour} ${grayColour}Search by IP${endColour}"
   echo -e "\t${purpleColour}y)${endColour} ${grayColour}Get YouTube resolution video${endColour}"
+  echo -e "\t${purpleColour}o)${endColour} ${grayColour}Search by OS${endColour}"
+  echo -e "\t${purpleColour}s)${endColour} ${grayColour}Search by skills${endColour}"
   echo -e "\t${purpleColour}h)${endColour} ${grayColour}Show help${endColour}\n"
 }
 
@@ -125,17 +127,52 @@ function getByOS() {
   cat bundle.js | grep "so: \"$OS\"" -B 5 | grep "name" | tr -d '"' | tr -d ',' | awk 'NF{print $NF}' | column
 }
 
+function getByDifficultyAndOS() {
+  DIFFICULTY="$1"
+  OS="$2"
+
+  MACHINES="$(cat bundle.js | grep "so: \"$OS\"" -C 4 | grep "dificultad: \"$DIFFICULTY\"" -B 5 | grep "name: " | awk 'NF{print $NF}' | tr -d '"' | tr -d ',' | column)"
+
+  if [ ! $MACHINES ]; then
+    echo -e "\n${redColour}[!] There's no machines meeting your requisites${endColour}"
+    exit 1
+  fi
+
+  echo -e "\n${yellowColour}[+]${endColour} ${grayColour}Machines with OS${endColour} ${blueColour}$OS${endColour} ${grayColour}and difficulty${endColour} ${blueColour}$DIFFICULTY${endColour}:\n"
+  
+  cat bundle.js | grep "so: \"$OS\"" -C 4 | grep "dificultad: \"$DIFFICULTY\"" -B 5 | grep "name: " | awk 'NF{print $NF}' | tr -d '"' | tr -d ',' | column
+
+}
+
+function getBySkills() {
+  SKILLS="$1"
+
+  MACHINES="$(cat bundle.js | grep  "skills: " -B 6 | grep -i "$SKILLS" -B 6 | grep "name: " | awk 'NF{print $NF}' | tr -d '"' | tr -d ',' | column)"
+
+  if [ ! $MACHINES ]; then
+    echo -e "\n${redColour}[!] There's no machines with the provided skills${endColour}"
+    exit 1
+  fi
+
+  echo -e "\n${yellowColour}[+]${endColour} ${grayColour}Machines with skills${endColour} ${blueColour}$SKILLS${endColour}:\n"
+
+  cat bundle.js | grep  "skills: " -B 6 | grep -i "SQLI" -B 6 | grep "name: " | awk 'NF{print $NF}' | tr -d '"' | tr -d ',' | column
+}
+
 # Indicators
 declare -i PARAMETER_COUNTER=0
+declare -i DIFFICULTY_SWITCH=0
+declare -i OS_SWITCH=0
 
-while getopts "m:ui:y:d:o:h" ARG; do
+while getopts "m:ui:y:d:o:s:h" ARG; do
   case $ARG in
     m) MACHINE_NAME=$OPTARG; let PARAMETER_COUNTER+=1;;
     u) let PARAMETER_COUNTER+=2;;
     i) IP_ADDRESS=$OPTARG; let PARAMETER_COUNTER+=3;;
     y) MACHINE_NAME=$OPTARG; let PARAMETER_COUNTER+=4;;
-    d) DIFFICULTY=$OPTARG; let PARAMETER_COUNTER+=5;;
-    o) OS=$OPTARG; let PARAMETER_COUNTER+=6;;
+    d) DIFFICULTY=$OPTARG; DIFFICULTY_SWITCH=1; let PARAMETER_COUNTER+=5;;
+    o) OS=$OPTARG; OS_SWITCH=1; let PARAMETER_COUNTER+=6;;
+    s) SKILLS=$OPTARG; let PARAMETER_COUNTER+=7;;
     h) ;;
   esac
 done
@@ -152,6 +189,10 @@ elif [ $PARAMETER_COUNTER -eq 5 ]; then
   getByDifficulty $DIFFICULTY
 elif [ $PARAMETER_COUNTER -eq 6 ]; then
   getByOS $OS
+elif [ $PARAMETER_COUNTER -eq 7 ]; then
+  getBySkills "$SKILLS"
+elif [ $DIFFICULTY_SWITCH -eq 1 ] && [ $OS_SWITCH -eq 1 ]; then
+  getByDifficultyAndOS $DIFFICULTY $OS
 else
   helpPanel
 fi
