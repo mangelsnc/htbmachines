@@ -28,6 +28,7 @@ function helpPanel() {
   echo -e "\t${purpleColour}i)${endColour} ${grayColour}Search by IP${endColour}"
   echo -e "\t${purpleColour}y)${endColour} ${grayColour}Get YouTube resolution video${endColour}"
   echo -e "\t${purpleColour}o)${endColour} ${grayColour}Search by OS${endColour}"
+  echo -e "\t${purpleColour}d)${endColour} ${grayColour}Search by difficulty${endColour}"
   echo -e "\t${purpleColour}s)${endColour} ${grayColour}Search by skills${endColour}"
   echo -e "\t${purpleColour}h)${endColour} ${grayColour}Show help${endColour}\n"
 }
